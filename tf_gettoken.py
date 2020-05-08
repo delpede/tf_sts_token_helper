@@ -3,9 +3,11 @@
 import boto3
 import botocore
 from botocore.exceptions import ClientError
+from pathlib import Path
 import os
 import sys
 import argparse
+import shutil
 
 parser = argparse.ArgumentParser(description='Pass values to AWS STS')
 parser.add_argument('--mfa_token', '-t',
@@ -70,7 +72,28 @@ def get_sts_token(profile, mfa_token, my_arn):
         print(err)
 
 
-def 
+def backup_aws_configuarations():
+
+    home = str(Path.home())
+    aws_config_folder = home + '/' + '.aws'
+    if os.path.exists(aws_config_folder):
+        try:
+            aws_config_folder_backup = aws_config_folder + '-backup'
+            shutil.copytree(aws_config_folder, aws_config_folder_backup)
+
+            return True
+        except shutil.Error as err:
+            print(f'AWS confif folder not backed up {err}')
+        except OSError as err:
+            print(f'AWS confif folder not backed up {err}')
+
+    else:
+        sys.exit(f'Folder {aws_config_folder} does not exists. Exit')
+
+
+def update_aws_credentials():
+
+    # TODO update aws credentials with new token
 
 
 get_sts_token(profile, mfa_token, my_arn)
