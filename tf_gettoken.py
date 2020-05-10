@@ -23,6 +23,9 @@ def main():
     parser.add_argument('--arn', '-a',
                         type=str,
                         help='AWS ARN for user account')
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        help='Verbose')
 
     args = parser.parse_args()
 
@@ -39,17 +42,24 @@ def main():
         mfa_token = int(input('Enter MFA Token for AWS Account: '))
         if len(str(mfa_token)) != 6:
             sys.exit("Not a valid MFA code")
-            
 
     if args.arn:
         my_arn = args.arn
     else:
         my_arn = ''
 
-    get_sts_token(profile, mfa_token, my_arn)
+    if args.verbose:
+        set_verbose = True
+    else:
+        set_verbose = False
+
+    get_sts_token(profile, mfa_token, my_arn, set_verbose)
 
 
-def get_sts_token(profile, mfa_token, my_arn):
+def get_sts_token(profile, 
+                  mfa_token, 
+                  my_arn, 
+                  set_verbose):
 
     aws_profile = profile
     aws_mfa_token = str(mfa_token)
@@ -70,9 +80,10 @@ def get_sts_token(profile, mfa_token, my_arn):
         aws_secret_access_key = root_response['SecretAccessKey']
         aws_session_token = root_response['SessionToken']
 
-        print(aws_access_key_id)
-        print(aws_secret_access_key)
-        print(aws_session_token)
+        if set_verbose == True:
+            print(aws_access_key_id)
+            print(aws_secret_access_key)
+            print(aws_session_token)
 
     except ClientError as err:
         print(err)
@@ -121,9 +132,6 @@ def update_aws_credentials(profile,
     except OSError as err:
         print(f'Config error: {err}')
 
-
-
-# get_sts_token(profile, mfa_token, my_arn)
 
 if __name__ == '__main__':
     main()
