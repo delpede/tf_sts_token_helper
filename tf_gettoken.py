@@ -1,47 +1,52 @@
 #!/usr/bin/env python3
-
-import boto3
-import botocore
-from botocore.exceptions import ClientError
+try:
+    import boto3
+    import botocore
+    from botocore.exceptions import ClientError
+except ImportError as import_err:
+    print(f'You ned modules boto3 and botocore: {import_err}')
 from pathlib import Path
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import os
 import sys
 import argparse
 import shutil
 
-parser = argparse.ArgumentParser(description='Pass values to AWS STS')
-parser.add_argument('--mfa_token', '-t',
-                    type=int,
-                    help='Token from your AWS Google Authenticatior')
-parser.add_argument('--profile', '-p',
-                    type=str,
-                    help='The AWS profile to use for authentication')
-parser.add_argument('--arn', '-a',
-                    type=str,
-                    help='AWS ARN for user account')
+def main():
+    parser = argparse.ArgumentParser(description='Pass values to AWS STS')
+    parser.add_argument('--mfa_token', '-t',
+                        type=int,
+                        help='Token from your AWS Google Authenticatior')
+    parser.add_argument('--profile', '-p',
+                        type=str,
+                        help='The AWS profile to use for authentication')
+    parser.add_argument('--arn', '-a',
+                        type=str,
+                        help='AWS ARN for user account')
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-if args.profile:
-    profile = args.profile
-else:
-    profile = input('What profile to use (empty for default): ')
-    if profile == '':
-        profile = 'netic-iam'
+    if args.profile:
+        profile = args.profile
+    else:
+        profile = input('What profile to use (empty for default): ')
+        if profile == '':
+            profile = 'netic-iam'
 
-if args.mfa_token:
-    mfa_token = args.mfa_token
-else:
-    mfa_token = int(input('Enter MFA Token for AWS Account: '))
-    if len(str(mfa_token)) != 6:
-        sys.exit("Not a valid MFA code")
-        
+    if args.mfa_token:
+        mfa_token = args.mfa_token
+    else:
+        mfa_token = int(input('Enter MFA Token for AWS Account: '))
+        if len(str(mfa_token)) != 6:
+            sys.exit("Not a valid MFA code")
+            
 
-if args.arn:
-    my_arn = args.arn
-else:
-    my_arn = ''
+    if args.arn:
+        my_arn = args.arn
+    else:
+        my_arn = ''
+
+    get_sts_token(profile, mfa_token, my_arn)
 
 
 def get_sts_token(profile, mfa_token, my_arn):
@@ -102,10 +107,9 @@ def update_aws_credentials(profile,
                             aws_secret_access_key,
                             aws_session_token):
 
-    # TODO update aws credentials with new token
     home = str(Path.home())
-    aws_config_folder = home + '/' + '.aws'
-    aws_credentials = aws_config_folder + '/credentials'
+    aws_config_folder = home + '/' + '.aws/'
+    aws_credentials = aws_config_folder + 'credentials'
 
     config_parser = SafeConfigParser()
     config_parser.read(aws_credentials)
@@ -119,4 +123,7 @@ def update_aws_credentials(profile,
 
 
 
-get_sts_token(profile, mfa_token, my_arn)
+# get_sts_token(profile, mfa_token, my_arn)
+
+if __name__ == '__main__':
+    main()
