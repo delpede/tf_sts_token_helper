@@ -4,6 +4,7 @@ import boto3
 import botocore
 from botocore.exceptions import ClientError
 from pathlib import Path
+from ConfigParser import SafeConfigParser
 import os
 import sys
 import argparse
@@ -71,6 +72,11 @@ def get_sts_token(profile, mfa_token, my_arn):
     except ClientError as err:
         print(err)
 
+    update_aws_credentials(profile, 
+                                aws_access_key_id,
+                                aws_secret_access_key,
+                                aws_session_token)
+
 
 def backup_aws_configuarations():
 
@@ -91,9 +97,26 @@ def backup_aws_configuarations():
         sys.exit(f'Folder {aws_config_folder} does not exists. Exit')
 
 
-def update_aws_credentials():
+def update_aws_credentials(profile, 
+                            aws_access_key_id,
+                            aws_secret_access_key,
+                            aws_session_token):
 
     # TODO update aws credentials with new token
+    home = str(Path.home())
+    aws_config_folder = home + '/' + '.aws'
+    aws_credentials = aws_config_folder + '/credentials'
+
+    config_parser = SafeConfigParser()
+    config_parser.read(aws_credentials)
+
+    try:
+        config_parser.update(profile, aws_access_key_id)
+        config_parser.update(profile, aws_secret_access_key)
+        config_parser.update(profile, aws_session_token)
+    except OSError as err:
+        print(f'Config error: {err}')
+
 
 
 get_sts_token(profile, mfa_token, my_arn)
