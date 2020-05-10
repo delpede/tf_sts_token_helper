@@ -7,10 +7,12 @@ except ImportError as import_err:
     print(f'You ned modules boto3 and botocore: {import_err}')
 from pathlib import Path
 from configparser import SafeConfigParser
+from datetime import datetime
 import os
 import sys
 import argparse
 import shutil
+
 
 def main():
     parser = argparse.ArgumentParser(description='Pass values to AWS STS')
@@ -93,28 +95,49 @@ def get_sts_token(profile,
         aws_secret_access_key = root_response['SecretAccessKey']
         aws_session_token = root_response['SessionToken']
 
-        if set_verbose == True:
+        if set_verbose is True:
             print(aws_access_key_id)
             print(aws_secret_access_key)
             print(aws_session_token)
 
     except ClientError as err:
         print(err)
+    
+    if backup_aws_configuarations(set_verbose) is True:
+        update_aws_credentials(profile, 
+                                    aws_access_key_id,
+                                    aws_secret_access_key,
+                                    aws_session_token)
+    else:
+        sys.exit()
 
-    update_aws_credentials(profile, 
-                                aws_access_key_id,
-                                aws_secret_access_key,
-                                aws_session_token)
 
-
-def backup_aws_configuarations():
+def backup_aws_configuarations(set_verbose):
 
     home = str(Path.home())
-    aws_config_folder = home + '/' + '.aws'
+    aws_config_folder = home + '/' + '.aws/'
+    aws_configs = ['config', 'credentials']
+    backup_aws_config_folder = home + '/.tf_gettoken_backups/'
+    timenow = datetime.now()
+    formatted_time_now = timenow.strftime('%Y%m%d-%H%M%S')
+
+    if not os.path.exists(backup_aws_config_folder):
+        try:
+            os.mkdir(backup_aws_config_folder)
+            if set_verbose == True:
+                print(f'Created backup folder: {backup_aws_config_folder}')
+        except FileExistsError as err:
+            if set_verbose == True:
+                print(f'{err}')
+
     if os.path.exists(aws_config_folder):
         try:
-            aws_config_folder_backup = aws_config_folder + '-backup'
-            shutil.copytree(aws_config_folder, aws_config_folder_backup)
+
+            for aws_file in aws_configs:
+                src_aws_file = aws_file + aws_file
+                backup_aws_File = aws_file + '-' + formatted_time_now
+
+                shutil.copyfile(src_aws_file, backup_aws_File)
 
             return True
         except shutil.Error as err:

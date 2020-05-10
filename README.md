@@ -33,3 +33,5 @@ Add verbosity to the execution
 `````
 --verbose, -v
 `````
+
+Script copies .aws/config and .aws/credentials to a folder called .tf_gettoken_backups before updating credential file
