@@ -26,6 +26,9 @@ def main():
     parser.add_argument('--verbose', '-v',
                         action='store_true',
                         help='Verbose')
+    parser.add_argument('--duration', '-d',
+                        type=int,
+                        help='How long before token expires in seconds (Default')
 
     args = parser.parse_args()
 
@@ -48,17 +51,27 @@ def main():
     else:
         my_arn = ''
 
+    if args.duration:
+        duration = args.duration
+    else:
+        duration = 43200
+
     if args.verbose:
         set_verbose = True
     else:
         set_verbose = False
 
-    get_sts_token(profile, mfa_token, my_arn, set_verbose)
+    get_sts_token(profile, 
+                  mfa_token, 
+                  my_arn, 
+                  duration, 
+                  set_verbose)
 
 
 def get_sts_token(profile, 
                   mfa_token, 
-                  my_arn, 
+                  my_arn,
+                  duration,  
                   set_verbose):
 
     aws_profile = profile
@@ -70,7 +83,7 @@ def get_sts_token(profile,
     try:
         
         response = sts_client.get_session_token(
-            DurationSeconds=43200,
+            DurationSeconds=duration,
             SerialNumber=my_arn,
             TokenCode=aws_mfa_token
         )
