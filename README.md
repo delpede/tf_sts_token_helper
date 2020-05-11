@@ -19,6 +19,11 @@ The AWS Profile to use
 --profile, -p
 ````
 
+The Profile you want to add the new Token to
+````
+--update, -u
+````
+
 Arn of the main account user
 `````
 --my_arn, -a
