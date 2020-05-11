@@ -40,16 +40,12 @@ def main():
     if args.profile:
         profile = args.profile
     else:
-        profile = input('What profile to use (empty for default): ')
-        if profile == '':
-            profile = 'netic-iam'
+        profile = 'netic-iam'
 
     if args.update:
         update_profile = args.update
     else:
-        update_profile = input('Name of the profile you want to issue new token to (Enter for default): ')
-        if update_profile == '':
-            update_profile = 'netic-iam-mfa'
+        update_profile = 'netic-iam-mfa'
 
     if args.mfa_token:
         mfa_token = args.mfa_token
@@ -61,9 +57,7 @@ def main():
     if args.arn:
         my_arn = args.arn
     else:
-        my_arn = input('AWS Arn to use (Enter for default): ')
-        if my_arn == '':
-            my_arn = ''
+        my_arn = ''
 
     if args.duration:
         duration = args.duration
