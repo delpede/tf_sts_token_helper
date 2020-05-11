@@ -40,3 +40,9 @@ Add verbosity to the execution
 `````
 
 Script copies .aws/config and .aws/credentials to a folder called .tf_gettoken_backups before updating credential file
+
+### Example
+````
+tf_gettoken.py --arn arn:aws:iam::111111111111:user --update profile-to-update --profile profile-to-use --mfa_token 111222 --duration 43600 --verbose
+````
+

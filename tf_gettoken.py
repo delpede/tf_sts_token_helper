@@ -4,7 +4,7 @@ try:
     import botocore
     from botocore.exceptions import ClientError
 except ImportError as import_err:
-    print(f'You ned modules boto3 and botocore: {import_err}')
+    print(f'You need modules boto3 and botocore: {import_err}')
 from pathlib import Path
 from configparser import ConfigParser
 from datetime import datetime
@@ -185,6 +185,8 @@ def update_aws_credentials(profile,
 
         with open(aws_credentials, 'w') as update_file:
             config_parser.write(update_file)
+        
+        print('AWS Credentials file updated')
 
     except OSError as err:
         print(f'Config error: {err}')
