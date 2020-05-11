@@ -6,7 +6,7 @@ try:
 except ImportError as import_err:
     print(f'You ned modules boto3 and botocore: {import_err}')
 from pathlib import Path
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from datetime import datetime
 import os
 import sys
@@ -22,6 +22,9 @@ def main():
     parser.add_argument('--profile', '-p',
                         type=str,
                         help='The AWS profile to use for authentication')
+    parser.add_argument('--update', '-u',
+                        type=str,
+                        help='The profile you want to update with new token')
     parser.add_argument('--arn', '-a',
                         type=str,
                         help='AWS ARN for user account')
@@ -41,6 +44,13 @@ def main():
         if profile == '':
             profile = 'netic-iam'
 
+    if args.update:
+        update_profile = args.update
+    else:
+        update_profile = input('Name of the profile you want to issue new token to (Enter for default): ')
+        if update_profile == '':
+            update_profile = 'netic-iam-mfa'
+
     if args.mfa_token:
         mfa_token = args.mfa_token
     else:
@@ -51,26 +61,32 @@ def main():
     if args.arn:
         my_arn = args.arn
     else:
-        my_arn = ''
+        my_arn = input('AWS Arn to use (Enter for default): ')
+        if my_arn == '':
+            my_arn = ''
 
     if args.duration:
         duration = args.duration
     else:
-        duration = 43200
+        duration = input('Lifetime of token in seconds (Enter for default): ')
+        if duration == '':
+            duration = 43200
 
     if args.verbose:
         set_verbose = True
     else:
         set_verbose = False
 
-    get_sts_token(profile, 
+    get_sts_token(profile,
+                  update_profile, 
                   mfa_token, 
                   my_arn, 
                   duration, 
                   set_verbose)
 
 
-def get_sts_token(profile, 
+def get_sts_token(profile,
+                  update_profile,
                   mfa_token, 
                   my_arn,
                   duration,  
@@ -104,7 +120,8 @@ def get_sts_token(profile,
         print(err)
     
     if backup_aws_configuarations(set_verbose) is True:
-        update_aws_credentials(profile, 
+        update_aws_credentials(profile,
+                                    update_profile, 
                                     aws_access_key_id,
                                     aws_secret_access_key,
                                     aws_session_token)
@@ -132,24 +149,24 @@ def backup_aws_configuarations(set_verbose):
 
     if os.path.exists(aws_config_folder):
         try:
-
             for aws_file in aws_configs:
-                src_aws_file = aws_file + aws_file
-                backup_aws_File = aws_file + '-' + formatted_time_now
+                src_aws_file = aws_config_folder + aws_file
+                backup_aws_File = backup_aws_config_folder + aws_file + '-' + formatted_time_now
 
                 shutil.copyfile(src_aws_file, backup_aws_File)
 
             return True
         except shutil.Error as err:
-            print(f'AWS confif folder not backed up {err}')
+            print(f'SHUTIL - AWS config folder not backed up {err}')
         except OSError as err:
-            print(f'AWS confif folder not backed up {err}')
+            print(f'OSError - AWS config folder not backed up {err}')
 
     else:
         sys.exit(f'Folder {aws_config_folder} does not exists. Exit')
 
 
-def update_aws_credentials(profile, 
+def update_aws_credentials(profile,
+                            update_profile,
                             aws_access_key_id,
                             aws_secret_access_key,
                             aws_session_token):
@@ -158,13 +175,17 @@ def update_aws_credentials(profile,
     aws_config_folder = home + '/' + '.aws/'
     aws_credentials = aws_config_folder + 'credentials'
 
-    config_parser = SafeConfigParser()
+    config_parser = ConfigParser()
     config_parser.read(aws_credentials)
 
     try:
-        config_parser.update(profile, aws_access_key_id)
-        config_parser.update(profile, aws_secret_access_key)
-        config_parser.update(profile, aws_session_token)
+        config_parser.set(update_profile, 'aws_access_key_id', aws_access_key_id)
+        config_parser.set(update_profile, 'aws_secret_access_key', aws_secret_access_key)
+        config_parser.set(update_profile, 'aws_session_token', aws_session_token)
+
+        with open(aws_credentials, 'w') as update_file:
+            config_parser.write(update_file)
+
     except OSError as err:
         print(f'Config error: {err}')
 
