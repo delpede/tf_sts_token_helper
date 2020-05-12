@@ -15,6 +15,16 @@ import shutil
 
 
 def main():
+
+    ## Configuration
+    '''
+        configure default arn and default profiles
+    '''
+    default_profile = 'netic-iam'
+    default_profile_mfa = 'netic-iam-mfa'
+    default_arn = ''
+    default_duration = 43200
+
     parser = argparse.ArgumentParser(description='Pass values to AWS STS')
     parser.add_argument('--mfa_token', '-t',
                         type=int,
@@ -40,12 +50,12 @@ def main():
     if args.profile:
         profile = args.profile
     else:
-        profile = 'netic-iam'
+        profile = default_profile
 
     if args.update:
         update_profile = args.update
     else:
-        update_profile = 'netic-iam-mfa'
+        update_profile = default_profile_mfa
 
     if args.mfa_token:
         mfa_token = args.mfa_token
@@ -57,14 +67,12 @@ def main():
     if args.arn:
         my_arn = args.arn
     else:
-        my_arn = ''
+        my_arn = default_arn
 
     if args.duration:
         duration = args.duration
     else:
-        duration = input('Lifetime of token in seconds (Enter for default): ')
-        if duration == '':
-            duration = 43200
+        duration = default_duration
 
     if args.verbose:
         set_verbose = True
