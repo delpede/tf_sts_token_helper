@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 try:
     import boto3
-    import botocore
     from botocore.exceptions import ClientError
 except ImportError as import_err:
     print(f'You need modules boto3 and botocore: {import_err}')
@@ -16,7 +15,7 @@ import shutil
 
 def main():
 
-    ## Configuration
+    # Configuration
     '''
         configure default arn and default profiles
     '''
@@ -27,7 +26,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Pass values to AWS STS')
     parser.add_argument('--mfa_token', '-t',
-                        type=int,
+                        type=str,
                         help='Token from your AWS Google Authenticatior')
     parser.add_argument('--profile', '-p',
                         type=str,
@@ -60,8 +59,8 @@ def main():
     if args.mfa_token:
         mfa_token = args.mfa_token
     else:
-        mfa_token = int(input('Enter MFA Token for AWS Account: '))
-        if len(str(mfa_token)) != 6:
+        mfa_token = input('Enter MFA Token for AWS Account: ')
+        if len(str(mfa_token)) != 6 and mfa_token.isdigit() is False:
             sys.exit("Not a valid MFA code")
 
     if args.arn:
@@ -80,18 +79,18 @@ def main():
         set_verbose = False
 
     get_sts_token(profile,
-                  update_profile, 
-                  mfa_token, 
-                  my_arn, 
-                  duration, 
+                  update_profile,
+                  mfa_token,
+                  my_arn,
+                  duration,
                   set_verbose)
 
 
 def get_sts_token(profile,
                   update_profile,
-                  mfa_token, 
+                  mfa_token,
                   my_arn,
-                  duration,  
+                  duration,
                   set_verbose):
 
     aws_profile = profile
@@ -101,7 +100,7 @@ def get_sts_token(profile,
     sts_client = session.client('sts')
 
     try:
-        
+
         response = sts_client.get_session_token(
             DurationSeconds=duration,
             SerialNumber=my_arn,
@@ -120,13 +119,15 @@ def get_sts_token(profile,
 
     except ClientError as err:
         print(err)
-    
+
     if backup_aws_configuarations(set_verbose) is True:
-        update_aws_credentials(profile,
-                                    update_profile, 
-                                    aws_access_key_id,
-                                    aws_secret_access_key,
-                                    aws_session_token)
+        update_aws_credentials(
+            profile,
+            update_profile,
+            aws_access_key_id,
+            aws_secret_access_key,
+            aws_session_token
+            )
     else:
         sys.exit()
 
@@ -143,10 +144,10 @@ def backup_aws_configuarations(set_verbose):
     if not os.path.exists(backup_aws_config_folder):
         try:
             os.mkdir(backup_aws_config_folder)
-            if set_verbose == True:
+            if set_verbose is True:
                 print(f'Created backup folder: {backup_aws_config_folder}')
         except FileExistsError as err:
-            if set_verbose == True:
+            if set_verbose is True:
                 print(f'{err}')
 
     if os.path.exists(aws_config_folder):
@@ -167,11 +168,13 @@ def backup_aws_configuarations(set_verbose):
         sys.exit(f'Folder {aws_config_folder} does not exists. Exit')
 
 
-def update_aws_credentials(profile,
-                            update_profile,
-                            aws_access_key_id,
-                            aws_secret_access_key,
-                            aws_session_token):
+def update_aws_credentials(
+    profile,
+    update_profile,
+    aws_access_key_id,
+    aws_secret_access_key,
+    aws_session_token
+        ):
 
     home = str(Path.home())
     aws_config_folder = home + '/' + '.aws/'
@@ -187,7 +190,7 @@ def update_aws_credentials(profile,
 
         with open(aws_credentials, 'w') as update_file:
             config_parser.write(update_file)
-        
+
         print('AWS Credentials file updated')
 
     except OSError as err:
