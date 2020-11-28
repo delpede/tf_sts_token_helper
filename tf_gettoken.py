@@ -101,7 +101,7 @@ def get_sts_token(profile,
     sts_client = session.client('sts')
 
     try:
-        
+
         response = sts_client.get_session_token(
             DurationSeconds=duration,
             SerialNumber=my_arn,
@@ -120,13 +120,13 @@ def get_sts_token(profile,
 
     except ClientError as err:
         print(err)
-    
+
     if backup_aws_configuarations(set_verbose) is True:
         update_aws_credentials(profile,
-                                    update_profile, 
-                                    aws_access_key_id,
-                                    aws_secret_access_key,
-                                    aws_session_token)
+                                update_profile, 
+                                aws_access_key_id,
+                                aws_secret_access_key,
+                                aws_session_token)
     else:
         sys.exit()
 
@@ -187,7 +187,7 @@ def update_aws_credentials(profile,
 
         with open(aws_credentials, 'w') as update_file:
             config_parser.write(update_file)
-        
+
         print('AWS Credentials file updated')
 
     except OSError as err:
