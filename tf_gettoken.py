@@ -25,24 +25,28 @@ def main():
     default_duration = 43200
 
     parser = argparse.ArgumentParser(description='Pass values to AWS STS')
-    parser.add_argument('--mfa_token', '-t',
+    parser.add_argument('--mfa_token',
+                        '-t',
                         type=str,
                         help='Token from your AWS Google Authenticatior')
-    parser.add_argument('--profile', '-p',
+    parser.add_argument('--profile',
+                        '-p',
                         type=str,
                         help='The AWS profile to use for authentication')
-    parser.add_argument('--update', '-u',
+    parser.add_argument('--update',
+                        '-u',
                         type=str,
                         help='The profile you want to update with new token')
-    parser.add_argument('--arn', '-a',
+    parser.add_argument('--arn',
+                        '-a',
                         type=str,
                         help='AWS ARN for user account')
-    parser.add_argument('--verbose', '-v',
-                        action='store_true',
-                        help='Verbose')
-    parser.add_argument('--duration', '-d',
-                        type=int,
-                        help='How long before token expires in seconds (Default')
+    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
+    parser.add_argument(
+        '--duration',
+        '-d',
+        type=int,
+        help='How long before token expires in seconds (Default')
 
     args = parser.parse_args()
 
@@ -78,19 +82,11 @@ def main():
     else:
         set_verbose = False
 
-    get_sts_token(profile,
-                  update_profile,
-                  mfa_token,
-                  my_arn,
-                  duration,
+    get_sts_token(profile, update_profile, mfa_token, my_arn, duration,
                   set_verbose)
 
 
-def get_sts_token(profile,
-                  update_profile,
-                  mfa_token,
-                  my_arn,
-                  duration,
+def get_sts_token(profile, update_profile, mfa_token, my_arn, duration,
                   set_verbose):
 
     aws_profile = profile
@@ -101,11 +97,9 @@ def get_sts_token(profile,
 
     try:
 
-        response = sts_client.get_session_token(
-            DurationSeconds=duration,
-            SerialNumber=my_arn,
-            TokenCode=aws_mfa_token
-        )
+        response = sts_client.get_session_token(DurationSeconds=duration,
+                                                SerialNumber=my_arn,
+                                                TokenCode=aws_mfa_token)
 
         root_response = response['Credentials']
         aws_access_key_id = root_response['AccessKeyId']
@@ -121,13 +115,8 @@ def get_sts_token(profile,
         print(err)
 
     if backup_aws_configuarations(set_verbose) is True:
-        update_aws_credentials(
-            profile,
-            update_profile,
-            aws_access_key_id,
-            aws_secret_access_key,
-            aws_session_token
-            )
+        update_aws_credentials(profile, update_profile, aws_access_key_id,
+                               aws_secret_access_key, aws_session_token)
     else:
         sys.exit()
 
@@ -168,13 +157,8 @@ def backup_aws_configuarations(set_verbose):
         sys.exit(f'Folder {aws_config_folder} does not exists. Exit')
 
 
-def update_aws_credentials(
-    profile,
-    update_profile,
-    aws_access_key_id,
-    aws_secret_access_key,
-    aws_session_token
-        ):
+def update_aws_credentials(profile, update_profile, aws_access_key_id,
+                           aws_secret_access_key, aws_session_token):
 
     home = str(Path.home())
     aws_config_folder = home + '/' + '.aws/'
@@ -184,9 +168,12 @@ def update_aws_credentials(
     config_parser.read(aws_credentials)
 
     try:
-        config_parser.set(update_profile, 'aws_access_key_id', aws_access_key_id)
-        config_parser.set(update_profile, 'aws_secret_access_key', aws_secret_access_key)
-        config_parser.set(update_profile, 'aws_session_token', aws_session_token)
+        config_parser.set(update_profile, 'aws_access_key_id',
+                          aws_access_key_id)
+        config_parser.set(update_profile, 'aws_secret_access_key',
+                          aws_secret_access_key)
+        config_parser.set(update_profile, 'aws_session_token',
+                          aws_session_token)
 
         with open(aws_credentials, 'w') as update_file:
             config_parser.write(update_file)
